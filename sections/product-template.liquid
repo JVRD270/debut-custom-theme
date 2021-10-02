@@ -14,6 +14,14 @@
   {%- assign enable_image_zoom = section.settings.enable_image_zoom -%}
   {%- assign compare_at_price = current_variant.compare_at_price -%}
   {%- assign price = current_variant.price -%}
+  {%for tag in product.tags%}
+      {%if tag contains 'affiliate_'%}
+      {% assign isAffiliateProduct = true %}
+      {% assign affiliate_url = tag | split: 'affiliate_' | last %}
+      {%else%}
+      {% assign affiliate_url = '#'%}
+      {%endif%}
+  {%endfor%}
 
   {% case section.settings.media_size %}
     {% when 'small' %}
@@ -135,7 +143,8 @@
       <div class="product-single__meta">
 
         <h1 class="product-single__title">{{ product.title }}</h1>
-        <div>⭐⭐⭐⭐⭐<div>
+        {% unless isAffiliateProduct %}
+        <div>⭐⭐⭐⭐⭐</div>
         <script>window.performance.mark('debut:product:title_visible');</script>
 
           <div class="product__price">
@@ -152,6 +161,7 @@
               {%- endif -%}
             </div>
           {%- endif -%}
+          {%endunless%}
 
           {% capture "form_classes" -%}
             product-form product-form-{{ section.id }}
@@ -213,6 +223,7 @@
               <span class="product-form__error-message" data-error-message>{{ 'products.product.quantity_minimum_message' | t }}</span>
             </div>
 
+            {%unless isAffiliateProduct%}
             <div class="product-form__controls-group product-form__controls-group--submit">
               <div class="product-form__item product-form__item--submit
                 {%- if section.settings.enable_payment_button %} product-form__item--payment-button {%- endif -%}
@@ -221,7 +232,7 @@
                 <button type="submit" name="add"
                   {% unless current_variant.available %} aria-disabled="true"{% endunless %}
                   aria-label="{% unless current_variant.available %}{{ 'products.product.sold_out' | t }}{% else %}{{ 'products.product.add_to_cart' | t }}{% endunless %}"
-                  class="btn product-form__cart-submit{% if section.settings.enable_payment_button and product.selling_plan_groups == empty %} btn--secondary-accent{% endif %}"
+                  class="btn product-form__cart-submit{% if section.settings.enable_payment_button and product.selling_plan_groups == empty%} btn--secondary-accent{% endif %}"
                   {% if settings.enable_ajax %}aria-haspopup="dialog"{% endif %}
                   data-add-to-cart>
                   <span data-add-to-cart-text>
@@ -240,8 +251,12 @@
                 {% endif %}
               </div>
             </div>
+            {%endunless%}
           {% endform %}
         </div>
+        {%if isAffiliateProduct%}
+            <a style="color: white !important" href={{affiliate_url}} target = '_blank'><button class="btn product-form__cart-submit" style="width: 100%;min-height: 44px;" data-add-to-cart><span>See on Amazon</span></button></a>
+        {%endif%}
 
         {%- comment -%}
           Live region for announcing updated price and availability to screen readers
